@@ -43,12 +43,17 @@ docker run -d --name flask-app -p 80:5000 <dockerhub-user>/flask-cicd-demo:<buil
 ```
 
 ## Screenshots
+Pipeline
 ![Pipeline](screenshots/pipeline.png)
 
+Running App
 ![Running App](screenshots/app.png)
 
+AWS EC2 Jenkins and App servers
 ![AWS EC2](screenshots/AWS-EC2.png)
 
+GitHub Webhook
 ![GitHub Webhook](screenshots/webhooks.png)
 
+Docker Hub
 ![Docker Hub](screenshots/docker-hub.png)
