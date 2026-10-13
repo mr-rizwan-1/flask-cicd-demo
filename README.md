@@ -13,7 +13,7 @@ Checkout → Test → Build Image → Push Image → Deploy → Health Check
 
 
 
-CI/CD Project Flow: Jenkins + Docker + AWS EC2 
+## CI/CD Project Flow: Jenkins + Docker + AWS EC2  -->
 
 Developer git push
       ↓
