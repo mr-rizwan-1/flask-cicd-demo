@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE   = "YOUR_DOCKERHUB_USER/flask-cicd-demo"
+        IMAGE   = "rizwaan1980/flask-cicd-demo"
         TAG     = "${BUILD_NUMBER}"
         APP_IP  = "YOUR_APP_SERVER_IP"
     }
