@@ -1,20 +1,14 @@
 # Flask CI/CD Pipeline: Jenkins + Docker + AWS EC2
 
-Automated pipeline: GitHub push triggers Jenkins, which builds a Docker image,
+Automated pipeline: a GitHub push triggers Jenkins, which builds a Docker image,
 pushes it to Docker Hub, and deploys it to an AWS EC2 server.
 
 ## Tech Stack
 Jenkins | Docker | GitHub Webhooks | AWS EC2 | Bash | Flask
 
-## Pipeline Stages
-Checkout → Test → Build Image → Push Image → Deploy → Health Check
+## Architecture
 
-(Architecture diagram and screenshots coming soon)
-
-
-
-## CI/CD Project Flow: Jenkins + Docker + AWS EC2  -->
-
+```
 Developer git push
       ↓
 GitHub Webhook ──► Jenkins (EC2 #1)
@@ -26,9 +20,27 @@ GitHub Webhook ──► Jenkins (EC2 #1)
         docker pull → stop old container → run new container
                       ↓
               Health check (curl) ✅
+```
 
-Server	Port	Source
-Jenkins	22	My IP
-Jenkins	8080	0.0.0.0/0 (GitHub webhook ke liye, strong password rakhna)
-App	22	Jenkins server ka SG
-App	80	0.0.0.0/0
+## Pipeline Stages
+Checkout → Test → Build Image → Push Image → Deploy → Health Check
+
+## AWS Security Groups
+
+| Server  | Port | Source                      |
+|---------|------|-----------------------------|
+| Jenkins | 22   | My IP                       |
+| Jenkins | 8080 | 0.0.0.0/0 (GitHub webhook)  |
+| App     | 22   | Jenkins server SG           |
+| App     | 80   | 0.0.0.0/0                   |
+
+## Rollback
+Every image is tagged with the Jenkins build number, so any previous version
+can be redeployed:
+
+```bash
+docker run -d --name flask-app -p 80:5000 <dockerhub-user>/flask-cicd-demo:<build_number>
+```
+
+## Screenshots
+(Coming after pipeline run)
