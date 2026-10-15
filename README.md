@@ -7,7 +7,7 @@
 An end-to-end continuous integration and continuous deployment (CI/CD) pipeline for a containerized Python Flask application. Code changes pushed to GitHub automatically trigger a Jenkins build, package the application into a Docker image, push the artifact to Docker Hub, deploy it remotely to an AWS EC2 production instance, and execute automated health checks.
 ---
 ## Tech Stack
-> Jenkins | Docker | GitHub Webhooks | AWS EC2 | Bash | Flask
+> Jenkins | Docker | Docker Hub | GitHub Webhooks | AWS EC2 | Bash | Linux
 ---
 ## Architecture Overview
 ```text
