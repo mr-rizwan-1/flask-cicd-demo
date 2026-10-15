@@ -23,10 +23,9 @@ An end-to-end continuous integration and continuous deployment (CI/CD) pipeline 
                          v
      ================= AWS EC2: Jenkins Server =================
      |  1. Checkout Code                                       |
-     |  2. Execute Tests                                       |
-     |  3. Build Docker Image (Tagged with Build ID)           |
-     |  4. Push Image to Docker Hub Registry                   |
-     |  5. Trigger Remote Deployment via SSH Agent             |
+     |  2. Build Docker Image (Tagged with Build ID)           |
+     |  3. Push Image to Docker Hub Registry                   |
+     |  4. Trigger Remote Deployment via SSH Agent             |
      ===========================================================
                          |
                          v (SSH Authentication)
@@ -40,7 +39,7 @@ An end-to-end continuous integration and continuous deployment (CI/CD) pipeline 
 
 ## Pipeline Stages
 ```text
-[ Checkout SCM ] ➔ [ Run Unit Tests ] ➔ [ Build Docker Image ] ➔ [ Push to Docker Hub ] ➔ [ Deploy to EC2 ] ➔ [ Health Check ]
+[ Checkout SCM ] ➔ [ Syntax Check ] ➔ [ Build Docker Image ] ➔ [ Push to Docker Hub ] ➔ [ Deploy to EC2 ] ➔ [ Health Check ]
 ```
 ## Repository Structure
 ```text
@@ -75,6 +74,10 @@ flask-cicd-demo/
 | **Jenkins Server** | `8080` | TCP | `0.0.0.0/0` | Jenkins Web GUI & Webhook |
 | **App Server** | `22` | TCP | Jenkins Server SG | Deployment via SSH |
 | **App Server** | `80` | TCP | `0.0.0.0/0` | Public App Traffic |
+
+> **Note:** Jenkins port 8080 is open to `0.0.0.0/0` so that GitHub webhooks can reach it.
+> In production, restrict this to GitHub's published webhook IP ranges and put Jenkins
+> behind a reverse proxy with HTTPS.
 
 ## Step-by-Step Implementation Guide 
 ## Phase 1: Local Setup & GitHub Repository
@@ -146,7 +149,7 @@ git clone https://github.com/mr-rizwan-1/flask-cicd-demo.git
 cd flask-cicd-demo/scripts
 
 # Run the setup scripts
-chmod +x <docker-script>.sh <jenkins-script>.sh
+chmod +x <docker-script>.sh
 ./<docker-script>.sh
 ```
 ### Step 3.3: Verify Docker execution without sudo:
@@ -199,7 +202,7 @@ Navigate to **Manage Jenkins ➔ Credentials ➔ System ➔ Global credentials (
 
 ### Step 5.2: Configure GitHub Push Webhook:
 - Go to your repository on **GitHub ➔ Settings ➔ Webhooks ➔ Add webhook**.
-- **Payload URL**: `http://<JENKINS_PUBLIC_IP>:8080/`github-webhook/
+- **Payload URL**: `http://<JENKINS_PUBLIC_IP>:8080/github-webhook/`
 - **Content type**: `application/json`
 - **Trigger events**: `Just the push event`
 - Click **Add webhook**.
@@ -237,23 +240,29 @@ docker run -d --name flask-app --restart always -p 80:5000 <dockerhub-username>/
 ```
 
 ## Troubleshooting Guide
-
 | Issue | Root Cause | Remediation |
 | :--- | :--- | :--- |
-| `dial unix /var/run/docker.sock: connect: permission denied` | Jenkins user lacks permissions to interact with Docker. | Run `sudo usermod -aG docker jenkins && sudo systemctl restart jenkins`. |
-| `Host key verification failed` / `Permission denied (publickey)` | Incorrect SSH Key placement or missing file permissions. | Verify public key is appended in `~/.ssh/authorized_keys` on target host; set file mode with `chmod 600 ~/.ssh/authorized_keys`. |
-| `GitHub Webhook Delivery HTTP 403 / 500` | Misconfigured Jenkins URL or missing trailing slash. | Ensure payload URL ends strictly with `/github-webhook/` and port `8080` allows GitHub ingress. |
-| Pipeline crashes midway through Docker build | Server exhausted available physical memory (OOM). | Check system memory with `free -h` and ensure 2GB swap partition is active. |
-
-
+| Jenkins apt install failed ("repository is not signed") | Jenkins rotated its repo signing key to a 2026 key | Updated the setup script to use `jenkins.io-2026.key` |
+| Build stuck on "Waiting for next available executor" | Jenkins took the node offline: `/tmp` free space (947 MiB) was below the 1 GiB threshold | Lowered the temp-space threshold and brought the node back online |
+| `docker push` failed: "access token has insufficient scopes" | Docker Hub token was Read-only | Generated a Read & Write token and updated the Jenkins credential |
 
 ## Screenshots
 ### Pipeline
+---
 ![Pipeline](screenshots/pipeline.png)
+
 ### Running App
+---
 ![Running App](screenshots/app.png)
+
 ### AWS EC2 Jenkins and App servers
+---
 ![AWS EC2](screenshots/AWS-EC2.png)
+
 ### GitHub Webhook
+---
 ![GitHub Webhook](screenshots/webhooks.png)
-### Docker Hub ![Docker Hub](screenshots/docker-hub.png)
+
+### Docker Hub 
+---
+![Docker Hub](screenshots/docker-hub.png)
