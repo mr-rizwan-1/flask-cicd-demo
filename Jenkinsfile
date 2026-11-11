@@ -48,7 +48,7 @@ pipeline {
 
         stage('Health Check') {
             steps {
-                sh 'sleep 5 && curl -f http://172.31.21.137'
+                sh 'sleep 5 && curl -f http://$APP_IP'
             }
         }
     }
