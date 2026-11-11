@@ -4,7 +4,7 @@ pipeline {
     environment {
         IMAGE   = "rizwaan1980/flask-cicd-demo"
         TAG     = "${BUILD_NUMBER}"
-        APP_IP  = "3.81.146.167"
+        APP_IP  = "172.31.21.137"
     }
 
     stages {
